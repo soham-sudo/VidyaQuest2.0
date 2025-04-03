@@ -1,24 +1,35 @@
-const mongoose = require("mongoose");
-const express = require("express");
-const dotenv = require("dotenv");
-const app = express();
-const cors = require("cors");
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const dotenv = require('dotenv');
+const connectDB = require('./db');
 
+// Load env vars
 dotenv.config();
 
-const port = process.env.PORT || 3000;
+// Connect to database
+connectDB();
+
+const app = express();
+
+// Middleware
+app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
-app.use(cors({
-    origin : [process.env.HOST],
-    methods : ['GET', 'POST', 'DELETE', 'PUT'],
-    credentials : true
-}));
+// Routes
+app.use('/api/auth', require('./routes/authRoute'));
+app.use('/api/questions', require('./routes/questionRoute'));
+app.use('/api/quiz', require('./routes/quizRoute'));
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!' });
+});
 
-mongoose.connect(process.env.MONGO_DB_URL)
-    .then(() => console.log("Connected succesfully"))
-    .catch((err) => console.log(err));
+const PORT = process.env.PORT || 5000;
 
-
-app.listen(port, () => console.log(`Listening on port ${port}`) );
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
