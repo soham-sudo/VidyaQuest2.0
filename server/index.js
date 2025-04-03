@@ -13,9 +13,9 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors());
 
 // Routes
 app.use('/api/auth', require('./routes/authRoute'));
