@@ -2,15 +2,41 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import backendUrl from "../../../constants";
 
+// Helper to set auth token in axios headers
+const setAuthToken = (token) => {
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    localStorage.setItem('token', token);
+  } else {
+    delete axios.defaults.headers.common['Authorization'];
+    localStorage.removeItem('token');
+  }
+};
+
+// Check for token in storage and set headers
+const token = localStorage.getItem('token');
+if (token) {
+  setAuthToken(token);
+}
+
 // Async Thunks
 export const registerUser = createAsyncThunk(
   "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${backendUrl}/auth/register`, userData);
-      return response.data;
+      // Set auth token in headers
+      setAuthToken(response.data.token);
+      
+      // Transform response to match our state
+      return {
+        userid: response.data._id,
+        username: response.data.username,
+        email: response.data.email,
+        token: response.data.token
+      };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.message || "Registration failed");
     }
   }
 );
@@ -20,9 +46,18 @@ export const loginUser = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${backendUrl}/auth/login`, credentials);
-      return response.data;
+      // Set auth token in headers
+      setAuthToken(response.data.token);
+      
+      // Transform response to match our state
+      return {
+        userid: response.data._id,
+        username: response.data.username,
+        email: response.data.email,
+        token: response.data.token
+      };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   }
 );
@@ -32,9 +67,15 @@ export const getUserProfile = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${backendUrl}/auth/profile`);
-      return response.data;
+      
+      // Transform response to match our state
+      return {
+        userid: response.data._id,
+        username: response.data.username,
+        email: response.data.email
+      };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.message || "Failed to load profile");
     }
   }
 );
@@ -44,9 +85,16 @@ export const updateUserProfile = createAsyncThunk(
   async (profileData, { rejectWithValue }) => {
     try {
       const response = await axios.put(`${backendUrl}/auth/profile`, profileData);
-      return response.data;
+      
+      // Transform response to match our state
+      return {
+        userid: response.data._id,
+        username: response.data.username,
+        email: response.data.email,
+        token: response.data.token
+      };
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.message || "Failed to update profile");
     }
   }
 );
@@ -55,6 +103,7 @@ const initialState = {
     userid: undefined,
     username: undefined,
     email: undefined,
+    token: localStorage.getItem('token'),
     loading: false,
     error: null
 };
@@ -64,11 +113,13 @@ const authSlice = createSlice({
     initialState,
     reducers: {
         signoutUser(state) {
-            state.userid = initialState.userid;
-            state.username = initialState.username;
-            state.email = initialState.email;
+            state.userid = undefined;
+            state.username = undefined;
+            state.email = undefined;
+            state.token = null;
             state.loading = false;
             state.error = null;
+            setAuthToken(null);
         },
         clearError(state) {
             state.error = null;
@@ -86,6 +137,7 @@ const authSlice = createSlice({
                 state.userid = action.payload.userid;
                 state.username = action.payload.username;
                 state.email = action.payload.email;
+                state.token = action.payload.token;
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.loading = false;
@@ -101,6 +153,7 @@ const authSlice = createSlice({
                 state.userid = action.payload.userid;
                 state.username = action.payload.username;
                 state.email = action.payload.email;
+                state.token = action.payload.token;
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
@@ -128,8 +181,10 @@ const authSlice = createSlice({
             })
             .addCase(updateUserProfile.fulfilled, (state, action) => {
                 state.loading = false;
+                state.userid = action.payload.userid;
                 state.username = action.payload.username;
                 state.email = action.payload.email;
+                state.token = action.payload.token;
             })
             .addCase(updateUserProfile.rejected, (state, action) => {
                 state.loading = false;

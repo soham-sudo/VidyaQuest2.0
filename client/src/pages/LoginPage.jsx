@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { loginUser } from '../store/features/auth/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser, clearError } from '../store/features/auth/authSlice';
 import { FiMail, FiLock } from 'react-icons/fi';
 import { useToast } from '../components/ui/Toast';
 
@@ -10,11 +10,26 @@ const LoginPage = () => {
     email: '',
     password: ''
   });
-  const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { successToast, errorToast } = useToast();
+  const authError = useSelector(state => state.auth.error);
+  const authLoading = useSelector(state => state.auth.loading);
+
+  // Clear errors on unmount
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
+
+  // Monitor auth errors
+  useEffect(() => {
+    if (authError) {
+      errorToast(typeof authError === 'string' ? authError : 'Login failed. Please check your credentials.');
+    }
+  }, [authError, errorToast]);
 
   const handleChange = (e) => {
     setFormData({
@@ -25,16 +40,14 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
     try {
       await dispatch(loginUser(formData)).unwrap();
       successToast('Login successful!');
       navigate('/');
     } catch (err) {
-      errorToast(err.message || 'Login failed. Please check your credentials.');
-    } finally {
-      setLoading(false);
+      // Error is handled by the useEffect monitoring authError
+      console.error('Login error:', err);
     }
   };
 
@@ -118,10 +131,10 @@ const LoginPage = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={authLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? (
+              {authLoading ? (
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                   <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -129,7 +142,7 @@ const LoginPage = () => {
                   </svg>
                 </span>
               ) : null}
-              {loading ? 'Signing in...' : 'Sign in'}
+              {authLoading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
 

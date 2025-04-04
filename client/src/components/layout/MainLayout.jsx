@@ -3,15 +3,18 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { FiHome, FiBook, FiEdit, FiLogOut } from 'react-icons/fi';
 import { signoutUser } from '../../store/features/auth/authSlice';
+import { useToast } from '../ui/Toast';
 
 const MainLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth);
+  const auth = useSelector((state) => state.auth);
+  const { successToast } = useToast();
 
   const handleLogout = () => {
     dispatch(signoutUser());
+    successToast('You have been logged out successfully');
     navigate('/login');
   };
 
@@ -54,10 +57,10 @@ const MainLayout = ({ children }) => {
               </div>
             </div>
             <div className="flex items-center">
-              {user.userid ? (
+              {auth.userid ? (
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-700">
-                    Welcome, {user.username}
+                    Welcome, {auth.username}
                   </span>
                   <button
                     onClick={handleLogout}

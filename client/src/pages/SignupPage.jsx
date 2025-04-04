@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { registerUser } from '../store/features/auth/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser, clearError } from '../store/features/auth/authSlice';
 import { FiUser, FiMail, FiLock } from 'react-icons/fi';
 import { useToast } from '../components/ui/Toast';
 
@@ -17,6 +17,22 @@ const SignupPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { successToast, errorToast, warningToast } = useToast();
+  const authError = useSelector(state => state.auth.error);
+  const authLoading = useSelector(state => state.auth.loading);
+
+  // Clear errors on unmount
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
+
+  // Monitor auth errors
+  useEffect(() => {
+    if (authError) {
+      errorToast(typeof authError === 'string' ? authError : 'Registration failed. Please try again.');
+    }
+  }, [authError, errorToast]);
 
   const handleChange = (e) => {
     setFormData({
@@ -27,11 +43,20 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
+    
+    // Client-side validation
     if (formData.password !== formData.confirmPassword) {
       warningToast("Passwords do not match");
-      setLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      warningToast("Password must be at least 6 characters long");
+      return;
+    }
+
+    if (formData.username.length < 3) {
+      warningToast("Username must be at least 3 characters long");
       return;
     }
 
@@ -41,12 +66,12 @@ const SignupPage = () => {
         email: formData.email,
         password: formData.password,
       })).unwrap();
+      
       successToast("Account created successfully! Please log in.");
       navigate('/login');
     } catch (err) {
-      errorToast(err.message || 'Registration failed. Please try again.');
-    } finally {
-      setLoading(false);
+      // Error is handled by the useEffect monitoring authError
+      console.error('Registration error:', err);
     }
   };
 
@@ -82,6 +107,7 @@ const SignupPage = () => {
                   placeholder="Username"
                   value={formData.username}
                   onChange={handleChange}
+                  minLength={3}
                 />
               </div>
             </div>
@@ -119,6 +145,7 @@ const SignupPage = () => {
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
+                  minLength={6}
                 />
               </div>
             </div>
@@ -145,10 +172,10 @@ const SignupPage = () => {
           <div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={authLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {loading ? (
+              {authLoading ? (
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                   <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -156,7 +183,7 @@ const SignupPage = () => {
                   </svg>
                 </span>
               ) : null}
-              {loading ? "Creating account..." : "Sign up"}
+              {authLoading ? "Creating account..." : "Sign up"}
             </button>
           </div>
 
