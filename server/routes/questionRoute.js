@@ -16,4 +16,4 @@ router.get('/:id', getQuestion);
 // Protected routes (require authentication)
 router.post('/', protect, createQuestion);
 
-module.exports = questionRouter; 
+module.exports = router; 
