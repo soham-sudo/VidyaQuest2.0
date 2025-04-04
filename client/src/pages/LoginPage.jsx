@@ -3,17 +3,18 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { loginUser } from '../store/features/auth/authSlice';
 import { FiMail, FiLock } from 'react-icons/fi';
+import { useToast } from '../components/ui/Toast';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { successToast, errorToast } = useToast();
 
   const handleChange = (e) => {
     setFormData({
@@ -24,14 +25,14 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       await dispatch(loginUser(formData)).unwrap();
+      successToast('Login successful!');
       navigate('/');
     } catch (err) {
-      setError(err.message || 'Login failed');
+      errorToast(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -51,12 +52,6 @@ const LoginPage = () => {
             </Link>
           </p>
         </div>
-        
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">

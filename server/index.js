@@ -3,7 +3,9 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
 const connectDB = require('./db');
-
+const authRoute = require("./routes/authRoute.js");
+const quizRoute = require("./routes/quizRoute.js");
+const questionRoute = require("./routes/questionRoute.js");
 // Load env vars
 dotenv.config();
 
@@ -18,9 +20,9 @@ app.use(cookieParser());
 app.use(cors());
 
 // Routes
-app.use('/api/auth', require('./routes/authRoute'));
-app.use('/api/questions', require('./routes/questionRoute'));
-app.use('/api/quiz', require('./routes/quizRoute'));
+app.use('/api/auth', authRoute);
+app.use('/api/questions', questionRoute);
+app.use('/api/quiz', quizRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

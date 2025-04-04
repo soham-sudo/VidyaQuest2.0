@@ -13,4 +13,4 @@ router.use(protect);
 router.get('/', getQuizQuestions);
 router.post('/submit', submitQuiz);
 
-module.exports = router; 
+module.exports = quizRouter; 

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { registerUser } from '../store/features/auth/authSlice';
 import { FiUser, FiMail, FiLock } from 'react-icons/fi';
+import { useToast } from '../components/ui/Toast';
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -11,11 +12,11 @@ const SignupPage = () => {
     password: '',
     confirmPassword: ''
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { successToast, errorToast, warningToast } = useToast();
 
   const handleChange = (e) => {
     setFormData({
@@ -24,36 +25,26 @@ const SignupPage = () => {
     });
   };
 
-  const validateForm = () => {
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return false;
-    }
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return false;
-    }
-    return true;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setLoading(true);
 
-    if (!validateForm()) {
+    if (formData.password !== formData.confirmPassword) {
+      warningToast("Passwords do not match");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-
     try {
-      const { confirmPassword, ...registerData } = formData;
-      const result = await dispatch(registerUser(registerData)).unwrap();
-      if (result) {
-        navigate('/dashboard');
-      }
+      await dispatch(registerUser({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+      })).unwrap();
+      successToast("Account created successfully! Please log in.");
+      navigate('/login');
     } catch (err) {
-      setError(err.message || 'Registration failed. Please try again.');
+      errorToast(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,16 +60,10 @@ const SignupPage = () => {
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
             <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-              sign in to your account
+              sign in to your existing account
             </Link>
           </p>
         </div>
-        
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
@@ -161,7 +146,7 @@ const SignupPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
               {loading ? (
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -171,8 +156,20 @@ const SignupPage = () => {
                   </svg>
                 </span>
               ) : null}
-              {loading ? 'Creating account...' : 'Sign up'}
+              {loading ? "Creating account..." : "Sign up"}
             </button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Sign in
+              </Link>
+            </p>
           </div>
         </form>
       </div>

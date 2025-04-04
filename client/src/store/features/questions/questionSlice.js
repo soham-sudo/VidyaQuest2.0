@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-
+import backendUrl from "../../../constants";
 // Async Thunks
 export const fetchQuestions = createAsyncThunk(
   "questions/fetchQuestions",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/api/questions");
+      const response = await axios.get(`${backendUrl}/api/questions`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -18,7 +18,7 @@ export const getQuestion = createAsyncThunk(
   "questions/getQuestion",
   async (questionId, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/api/questions/${questionId}`);
+      const response = await axios.get(`${backendUrl}/api/questions/${questionId}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -30,7 +30,7 @@ export const createQuestion = createAsyncThunk(
   "questions/createQuestion",
   async (questionData, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/api/questions", questionData);
+      const response = await axios.post(`${backendUrl}/api/questions`, questionData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

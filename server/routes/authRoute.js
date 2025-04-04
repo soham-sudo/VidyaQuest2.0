@@ -16,5 +16,5 @@ router.post('/login', loginUser);
 router.get('/profile', protect, getUserProfile);
 router.put('/profile', protect, updateUserProfile);
 
-module.exports = router;
+module.exports = authRouter;
 

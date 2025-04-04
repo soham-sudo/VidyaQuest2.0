@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import backendUrl from "../../../constants";
 
 // Async Thunks
 export const registerUser = createAsyncThunk(
   "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/api/auth/register", userData);
+      const response = await axios.post(`${backendUrl}/auth/register`, userData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -18,7 +19,7 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async (credentials, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/api/auth/login", credentials);
+      const response = await axios.post(`${backendUrl}/auth/login`, credentials);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -30,7 +31,7 @@ export const getUserProfile = createAsyncThunk(
   "auth/getProfile",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/api/auth/profile");
+      const response = await axios.get(`${backendUrl}/auth/profile`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -42,7 +43,7 @@ export const updateUserProfile = createAsyncThunk(
   "auth/updateProfile",
   async (profileData, { rejectWithValue }) => {
     try {
-      const response = await axios.put("/api/auth/profile", profileData);
+      const response = await axios.put(`${backendUrl}/auth/profile`, profileData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

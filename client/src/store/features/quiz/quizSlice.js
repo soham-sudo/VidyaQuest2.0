@@ -1,12 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import backendUrl from "../../../constants";
 
 // Async Thunks
 export const fetchQuizQuestions = createAsyncThunk(
   "quiz/fetchQuestions",
   async (settings, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/api/questions/quiz", { params: settings });
+      const response = await axios.get(`${backendUrl}/api/questions/quiz`, { params: settings });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -18,7 +19,7 @@ export const submitQuiz = createAsyncThunk(
   "quiz/submit",
   async (answers, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/api/quiz/submit", answers);
+      const response = await axios.post(`${backendUrl}/api/quiz/submit`, answers);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
