@@ -55,7 +55,7 @@ const QuizPage = () => {
 
   // Timer effect for the entire quiz
   useEffect(() => {
-    if (timeLeft > 0 && !showReview) {
+    if (timeLeft > 0) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -68,7 +68,7 @@ const QuizPage = () => {
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [timeLeft, showReview]);
+  }, [timeLeft]);
 
   const handleAnswer = (optionId) => {
     if (showReview) return;
