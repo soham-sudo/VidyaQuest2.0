@@ -14,6 +14,7 @@ import QuestionDetailPage from './pages/QuestionDetailPage';
 import SubmitQuestionPage from './pages/SubmitQuestionPage';
 import QuizPage from './pages/QuizPage';
 import QuizResultsPage from './pages/QuizResultsPage';
+import QuizConfigPage from './pages/QuizConfigPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Protected Route Component
@@ -44,6 +45,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <MainLayout>
               <SubmitQuestionPage />
+            </MainLayout>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/quiz-config" 
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <QuizConfigPage />
             </MainLayout>
           </ProtectedRoute>
         } 

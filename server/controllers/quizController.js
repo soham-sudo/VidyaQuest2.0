@@ -5,16 +5,30 @@ const Question = require('../models/questionModel');
 // @access  Private
 const getQuizQuestions = async (req, res) => {
     try {
-        const { category, limit = 10 } = req.query;
+        const { categories, limit = 10 } = req.query;
         let query = {};
 
         // Apply category filter if provided
-        if (category) query.category = category;
+        if (categories) {
+            // Handle both single category and multiple categories
+            const categoryArray = Array.isArray(categories) 
+                ? categories 
+                : [categories];
+            
+            query.category = { $in: categoryArray };
+        }
+
+        // Count available questions matching the criteria
+        const availableCount = await Question.countDocuments(query);
+        
+        // Determine how many questions to return
+        const requestedLimit = parseInt(limit);
+        const actualLimit = Math.min(requestedLimit, availableCount);
 
         // Get random questions
         const questions = await Question.aggregate([
             { $match: query },
-            { $sample: { size: parseInt(limit) } },
+            { $sample: { size: actualLimit } },
             {
                 $project: {
                     _id: 1,
@@ -35,7 +49,12 @@ const getQuizQuestions = async (req, res) => {
             }
         ]);
 
-        res.json(questions);
+        res.json({
+            questions,
+            totalAvailable: availableCount,
+            requested: requestedLimit,
+            returned: questions.length
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
