@@ -12,3 +12,9 @@ home page
 quiz page
 questionbank page
 submit question page
+
+
+question bank page
+    will contains methods to upload questions 
+    solutions (can be more than 1 correct)
+    explanations etc

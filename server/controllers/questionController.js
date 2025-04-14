@@ -1,4 +1,8 @@
 const Question = require('../models/questionModel');
+const mongoose = require('mongoose');
+
+// Hardcoded test user ID for development only
+const TEST_USER_ID = '65fd97a41f91d6bb0aafcbe9';
 
 // @desc    Get all questions
 // @route   GET /api/questions
@@ -82,6 +86,7 @@ const createQuestion = async (req, res) => {
 
         res.status(201).json(question);
     } catch (error) {
+        console.error('Error creating question:', error);
         res.status(500).json({ message: error.message });
     }
 };

@@ -10,6 +10,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import QuestionBankPage from './pages/QuestionBankPage';
+import QuestionDetailPage from './pages/QuestionDetailPage';
 import SubmitQuestionPage from './pages/SubmitQuestionPage';
 import QuizPage from './pages/QuizPage';
 import QuizResultsPage from './pages/QuizResultsPage';
@@ -34,6 +35,7 @@ const AppRoutes = () => {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/question-bank" element={<MainLayout><QuestionBankPage /></MainLayout>} />
+      <Route path="/questions/:id" element={<MainLayout><QuestionDetailPage /></MainLayout>} />
       
       {/* Protected Routes */}
       <Route 

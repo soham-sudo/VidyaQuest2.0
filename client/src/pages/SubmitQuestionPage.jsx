@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FiPlus, FiX } from 'react-icons/fi';
+import { useNavigate, Link } from 'react-router-dom';
+import { FiPlus, FiX, FiAlertTriangle } from 'react-icons/fi';
+import { questionApi } from '../lib/apiClient';
 
 const SubmitQuestionPage = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const SubmitQuestionPage = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState(false);
 
   const categories = [
     'Mathematics',
@@ -46,18 +48,100 @@ const SubmitQuestionPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setAuthError(false);
     setLoading(true);
 
+    // Validate form
+    if (!formData.correctAnswer) {
+      setError('Please select a correct answer');
+      setLoading(false);
+      return;
+    }
+
     try {
-      // TODO: Add API call to submit question
-      // const response = await submitQuestion(formData);
+      // Format data for API - match server model field names
+      const questionData = {
+        description: formData.question,
+        category: formData.category,
+        difficulty: formData.difficulty.toLowerCase(),
+        options: formData.options.map((text, index) => ({
+          description: text, // Changed from 'text' to 'description' to match server model
+          isCorrect: index.toString() === formData.correctAnswer
+        })),
+        solution: formData.explanation
+      };
+
+      console.log('Submitting question:', questionData);
+
+      // Submit question via API
+      await questionApi.createQuestion(questionData);
+      
+      // On success - show success message and navigate
+      alert('Question submitted successfully!');
       navigate('/question-bank');
     } catch (err) {
-      setError(err.message || 'Failed to submit question. Please try again.');
+      console.error('Error submitting question:', err);
+      
+      // Check if it's an authentication error
+      if (err.response && err.response.status === 401) {
+        setAuthError(true);
+      } else {
+        let errorMessage = 'Failed to submit question. Please try again.';
+        
+        if (err.response) {
+          errorMessage = err.response.data?.message || errorMessage;
+          console.log('Response error:', err.response.status, err.response.data);
+        } else if (err.request) {
+          errorMessage = 'No response from server. Please check your connection.';
+          console.log('Request error:', err.request);
+        } else {
+          console.log('Error:', err.message);
+        }
+        
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  // If not authenticated, show auth error UI
+  if (authError) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white shadow-sm rounded-lg p-6">
+          <div className="text-center">
+            <FiAlertTriangle className="mx-auto h-12 w-12 text-yellow-500" />
+            <h2 className="mt-2 text-lg font-medium text-gray-900">Authentication Required</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              You need to be logged in to submit questions.
+            </p>
+            <div className="mt-6 flex justify-center space-x-4">
+              <Link
+                to="/login"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Log In
+              </Link>
+              <Link
+                to="/signup"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Sign Up
+              </Link>
+              <button
+                type="button"
+                onClick={() => navigate('/question-bank')}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
