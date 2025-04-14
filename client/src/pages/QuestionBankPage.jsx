@@ -75,13 +75,19 @@ const QuestionBankPage = () => {
     const fetchQuestions = async () => {
       setLoading(true);
       try {
-        const data = await questionApi.getQuestions(filters);
-        setQuestions(data.length > 0 ? data : dummyQuestions);
+        // Prepare filters for API call, ensuring difficulty is lowercase
+        const apiFilters = {
+          ...filters,
+          difficulty: filters.difficulty ? filters.difficulty.toLowerCase() : '',
+        };
+        
+        const data = await questionApi.getQuestions(apiFilters);
+        setQuestions(data.length > 0 ? data : []); // Show empty array instead of dummy if no results
         setError('');
       } catch (err) {
         console.error('Error fetching questions:', err);
-        setError('Failed to load questions. Using sample questions instead.');
-        setQuestions(dummyQuestions);
+        setError('Failed to load questions. Please try again.');
+        setQuestions(dummyQuestions); // Keep dummy questions on error
       } finally {
         setLoading(false);
       }
@@ -195,9 +201,9 @@ const QuestionBankPage = () => {
       )}
 
       {/* Questions List */}
-      {!loading && questions.length === 0 && (
+      {!loading && questions.length === 0 && !error && (
         <div className="bg-white shadow-sm rounded-lg p-6 text-center">
-          <p className="text-gray-600">No questions found. Try different filters or submit your own questions.</p>
+          <p className="text-gray-600">No questions found matching your filters. Try different filters or submit your own questions.</p>
           <Link
             to="/submit-question"
             className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -234,21 +240,7 @@ const QuestionBankPage = () => {
                     <span>By {question.submittedBy?.username || 'Anonymous'}</span>
                     <span>•</span>
                     <span>{question.createdAt ? formatTimestamp(question.createdAt) : 'Recently'}</span>
-                  </div>
-                  
-                  {/* Preview of options */}
-                  <div className="mt-2 text-sm text-gray-600">
-                    <ul className="list-disc pl-5 space-y-1">
-                      {question.options && question.options.slice(0, 2).map((option, index) => (
-                        <li key={index} className={option.isCorrect ? "text-green-600 font-medium" : ""}>
-                          {option.description} {option.isCorrect && "(Correct)"}
-                        </li>
-                      ))}
-                      {question.options && question.options.length > 2 && (
-                        <li className="text-gray-500 italic">...and {question.options.length - 2} more options</li>
-                      )}
-                    </ul>
-                  </div>
+                  </div>  
                 </div>
                 <Link
                   to={`/questions/${question._id}?${searchParams.toString()}`}

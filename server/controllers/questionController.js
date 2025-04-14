@@ -9,12 +9,17 @@ const TEST_USER_ID = '65fd97a41f91d6bb0aafcbe9';
 // @access  Public
 const getQuestions = async (req, res) => {
     try {
-        const { category, difficulty } = req.query;
+        const { category, difficulty, search } = req.query;
         let query = {};
 
         // Apply filters if provided
         if (category) query.category = category;
         if (difficulty) query.difficulty = difficulty;
+        
+        // Add search functionality
+        if (search) {
+            query.description = { $regex: search, $options: 'i' }; // Case-insensitive search
+        }
 
         const questions = await Question.find(query)
             .populate('submittedBy', 'username')

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FiBook, FiTrendingUp, FiClock } from 'react-icons/fi';
+import { FiBook, FiTrendingUp, FiClock, FiPlay } from 'react-icons/fi';
 
 const HomePage = () => {
   const categories = [
@@ -47,12 +47,19 @@ const HomePage = () => {
         <p className="text-xl text-gray-600 mb-6">
           Your platform for competitive exam preparation. Practice questions, contribute to the community, and excel in your studies.
         </p>
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-4">
           <Link
-            to="/question-bank"
+            to="/quiz-config"
             className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
           >
-            Start Practicing
+            <FiPlay className="mr-2 h-5 w-5" />
+            Take Quiz
+          </Link>
+          <Link
+            to="/question-bank"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          >
+            Browse Questions
           </Link>
           <Link
             to="/submit-question"

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FiPlus, FiX, FiAlertTriangle } from 'react-icons/fi';
 import { questionApi } from '../lib/apiClient';
+import { useToast } from '../components/ui/Toast';
 
 const SubmitQuestionPage = () => {
   const navigate = useNavigate();
+  const { successToast } = useToast();
   const [formData, setFormData] = useState({
-    title: '',
     category: '',
     difficulty: '',
     question: '',
@@ -76,9 +77,17 @@ const SubmitQuestionPage = () => {
       // Submit question via API
       await questionApi.createQuestion(questionData);
       
-      // On success - show success message and navigate
-      alert('Question submitted successfully!');
-      navigate('/question-bank');
+      // On success - show success message and reset form
+      setFormData({
+        category: '',
+        difficulty: '',
+        question: '',
+        options: ['', '', '', ''],
+        correctAnswer: '',
+        explanation: '',
+      });
+      setError('');
+      successToast('Question submitted successfully!');
     } catch (err) {
       console.error('Error submitting question:', err);
       
@@ -158,21 +167,6 @@ const SubmitQuestionPage = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-              Question Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="category" className="block text-sm font-medium text-gray-700">

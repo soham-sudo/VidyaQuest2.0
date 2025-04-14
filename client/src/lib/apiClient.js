@@ -77,4 +77,45 @@ export const questionApi = {
   }
 };
 
+// Quiz related API calls
+export const quizApi = {
+  getQuizQuestions: async (settings = {}) => {
+    const { categories, limit } = settings;
+    let queryParams = new URLSearchParams();
+    
+    if (categories) {
+      // Handle both single category and array of categories
+      if (Array.isArray(categories)) {
+        categories.forEach(category => {
+          queryParams.append('categories', category);
+        });
+      } else {
+        queryParams.append('categories', categories);
+      }
+    }
+    
+    if (limit) queryParams.append('limit', limit);
+    
+    try {
+      console.log(`Fetching quiz questions with settings:`, settings);
+      const response = await apiClient.get(`/quiz?${queryParams.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching quiz questions:', error);
+      throw error;
+    }
+  },
+  
+  submitQuiz: async (quizData) => {
+    try {
+      console.log('Submitting quiz with data:', quizData);
+      const response = await apiClient.post('/quiz/submit', quizData);
+      return response.data;
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+      throw error;
+    }
+  }
+};
+
 export default apiClient;
