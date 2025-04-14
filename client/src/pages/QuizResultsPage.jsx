@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FiCheck, FiX, FiRefreshCw, FiHome, FiArrowLeft, FiClock, FiCheckCircle, FiAlertCircle, FiFilter } from 'react-icons/fi';
 import { quizApi } from '../lib/apiClient';
+import { CATEGORIES } from '../constants';
 
 const QuizResultsPage = () => {
   const location = useLocation();
@@ -149,7 +150,7 @@ const QuizResultsPage = () => {
   }, {});
 
   // Get unique categories for filter
-  const categories = ['all', ...Object.keys(categoryStats)];
+  const categories = ['all', ...CATEGORIES];
 
   // Filter questions based on selected category and status
   const filteredQuestions = questions.filter(question => {

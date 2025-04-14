@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { FiSearch, FiFilter, FiBook, FiPlus, FiEye } from 'react-icons/fi';
 import { questionApi } from '../lib/apiClient';
+import { CATEGORIES } from '../constants';
 
 // Dummy questions to show if API fails or for initial display
 const dummyQuestions = [
@@ -51,63 +52,35 @@ const dummyQuestions = [
 
 const QuestionBankPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     category: searchParams.get('category') || '',
-    difficulty: searchParams.get('difficulty') || '',
-    search: searchParams.get('search') || '',
+    difficulty: '',
+    search: '',
   });
-  const [questions, setQuestions] = useState(dummyQuestions); // Initialize with dummy questions
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  const categories = [
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'Computer Science',
-  ];
-
-  const difficulties = ['Easy', 'Medium', 'Hard'];
-
-  // Fetch questions on initial load and when filters change
   useEffect(() => {
     const fetchQuestions = async () => {
-      setLoading(true);
       try {
-        // Prepare filters for API call, ensuring difficulty is lowercase
-        const apiFilters = {
-          ...filters,
-          difficulty: filters.difficulty ? filters.difficulty.toLowerCase() : '',
-        };
-        
-        const data = await questionApi.getQuestions(apiFilters);
-        setQuestions(data.length > 0 ? data : []); // Show empty array instead of dummy if no results
-        setError('');
+        setLoading(true);
+        const response = await questionApi.getQuestions(filters);
+        setQuestions(response);
       } catch (err) {
+        setError('Failed to load questions. Please try again later.');
         console.error('Error fetching questions:', err);
-        setError('Failed to load questions. Please try again.');
-        setQuestions(dummyQuestions); // Keep dummy questions on error
       } finally {
         setLoading(false);
       }
     };
 
     fetchQuestions();
-  }, [filters.category, filters.difficulty, filters.search]); // Specify exact dependencies
+  }, [filters.category, filters.difficulty, filters.search]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
-    
-    // Update URL params
-    const newParams = new URLSearchParams(searchParams);
-    if (value) {
-      newParams.set(name, value);
-    } else {
-      newParams.delete(name);
-    }
-    setSearchParams(newParams);
   };
 
   // Format timestamp to relative time (e.g., "2 hours ago")
@@ -123,137 +96,111 @@ const QuestionBankPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white shadow-sm rounded-lg p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Question Bank</h1>
-            <p className="text-gray-600">
-              Browse and practice questions from various categories and difficulty levels.
-            </p>
-          </div>
-          <Link
-            to="/submit-question"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <FiPlus className="mr-2" /> Submit Question
-          </Link>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            Question Bank
+          </h1>
+          <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+            Browse and practice questions from various categories and difficulty levels.
+          </p>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="bg-white shadow-sm rounded-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="h-5 w-5 text-gray-400" />
+        {/* Filters */}
+        <div className="mt-8 bg-white shadow sm:rounded-lg p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {/* Category Filter */}
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                Category
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={filters.category}
+                onChange={handleFilterChange}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              >
+                <option value="">All Categories</option>
+                {CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
-            <input
-              type="text"
-              name="search"
-              value={filters.search}
-              onChange={handleFilterChange}
-              placeholder="Search questions..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
+
+            {/* Difficulty Filter */}
+            <div>
+              <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700">
+                Difficulty
+              </label>
+              <select
+                id="difficulty"
+                name="difficulty"
+                value={filters.difficulty}
+                onChange={handleFilterChange}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              >
+                <option value="">All Difficulties</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+
+            {/* Search Filter */}
+            <div>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+                Search
+              </label>
+              <input
+                type="text"
+                id="search"
+                name="search"
+                value={filters.search}
+                onChange={handleFilterChange}
+                placeholder="Search questions..."
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              />
+            </div>
           </div>
-          <select
-            name="category"
-            value={filters.category}
-            onChange={handleFilterChange}
-            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          >
-            <option value="">All Categories</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-          <select
-            name="difficulty"
-            value={filters.difficulty}
-            onChange={handleFilterChange}
-            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-          >
-            <option value="">All Difficulties</option>
-            {difficulties.map((difficulty) => (
-              <option key={difficulty} value={difficulty}>
-                {difficulty}
-              </option>
-            ))}
-          </select>
         </div>
-      </div>
 
-      {/* Loading and Error States */}
-      {loading && (
-        <div className="bg-white shadow-sm rounded-lg p-6 text-center">
-          <p className="text-gray-600">Loading questions...</p>
-        </div>
-      )}
-
-      {error && (
-        <div className="bg-yellow-50 shadow-sm rounded-lg p-6 border border-yellow-200">
-          <p className="text-yellow-600">{error}</p>
-        </div>
-      )}
-
-      {/* Questions List */}
-      {!loading && questions.length === 0 && !error && (
-        <div className="bg-white shadow-sm rounded-lg p-6 text-center">
-          <p className="text-gray-600">No questions found matching your filters. Try different filters or submit your own questions.</p>
-          <Link
-            to="/submit-question"
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <FiPlus className="mr-2" /> Submit Question
-          </Link>
-        </div>
-      )}
-
-      {!loading && questions.length > 0 && (
-        <div className="bg-white shadow-sm rounded-lg divide-y divide-gray-200">
-          {questions.map((question) => (
-            <div
-              key={question._id}
-              className="p-6 hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <Link to={`/questions/${question._id}?${searchParams.toString()}`} 
-                        state={{ relatedQuestions: questions }}
-                        className="group">
-                    <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-600">
-                      {question.description}
-                    </h3>
-                  </Link>
-                  <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
-                    <span className="flex items-center">
-                      <FiBook className="mr-1 h-4 w-4" />
-                      {question.category}
-                    </span>
-                    <span>•</span>
-                    <span className="capitalize">{question.difficulty}</span>
-                    <span>•</span>
-                    <span>By {question.submittedBy?.username || 'Anonymous'}</span>
-                    <span>•</span>
-                    <span>{question.createdAt ? formatTimestamp(question.createdAt) : 'Recently'}</span>
-                  </div>  
-                </div>
-                <Link
-                  to={`/questions/${question._id}?${searchParams.toString()}`}
-                  state={{ relatedQuestions: questions }}
-                  className="ml-4 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        {/* Questions List */}
+        <div className="mt-8">
+          {loading ? (
+            <div className="text-center py-4">Loading questions...</div>
+          ) : error ? (
+            <div className="text-center py-4 text-red-600">{error}</div>
+          ) : questions.length === 0 ? (
+            <div className="text-center py-4 text-gray-500">No questions found</div>
+          ) : (
+            <div className="space-y-4">
+              {questions.map((question) => (
+                <div
+                  key={question._id}
+                  className="bg-white shadow sm:rounded-lg p-6"
                 >
-                  <FiEye className="mr-1" /> View
-                </Link>
-              </div>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {question.description}
+                      </h3>
+                      <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
+                        <span>{question.category}</span>
+                        <span>•</span>
+                        <span>{question.difficulty}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };

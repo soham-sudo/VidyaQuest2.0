@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { FiHome, FiBook, FiEdit, FiLogOut } from 'react-icons/fi';
-import { signoutUser } from '../../store/features/auth/authSlice';
+import { logout } from '../../store/features/auth/authSlice';
 import { useToast } from '../ui/Toast';
 
 const MainLayout = ({ children }) => {
@@ -13,7 +13,7 @@ const MainLayout = ({ children }) => {
   const { successToast } = useToast();
 
   const handleLogout = () => {
-    dispatch(signoutUser());
+    dispatch(logout());
     successToast('You have been logged out successfully');
     navigate('/login');
   };

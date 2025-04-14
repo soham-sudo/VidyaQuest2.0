@@ -3,33 +3,25 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FiPlus, FiX, FiAlertTriangle } from 'react-icons/fi';
 import { questionApi } from '../lib/apiClient';
 import { useToast } from '../components/ui/Toast';
+import { CATEGORIES } from '../constants';
 
 const SubmitQuestionPage = () => {
   const navigate = useNavigate();
   const { successToast } = useToast();
   const [formData, setFormData] = useState({
-    category: '',
-    difficulty: '',
-    question: '',
+    description: '',
     options: ['', '', '', ''],
-    correctAnswer: '',
-    explanation: '',
+    solution: '',
+    difficulty: '',
+    category: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState(false);
 
-  const categories = [
-    'Mathematics',
-    'Physics',
-    'Chemistry',
-    'Biology',
-    'Computer Science',
-  ];
-
   const difficulties = ['Easy', 'Medium', 'Hard'];
 
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -79,12 +71,11 @@ const SubmitQuestionPage = () => {
       
       // On success - show success message and reset form
       setFormData({
-        category: '',
-        difficulty: '',
-        question: '',
+        description: '',
         options: ['', '', '', ''],
-        correctAnswer: '',
-        explanation: '',
+        solution: '',
+        difficulty: '',
+        category: '',
       });
       setError('');
       successToast('Question submitted successfully!');
@@ -176,12 +167,11 @@ const SubmitQuestionPage = () => {
                 id="category"
                 name="category"
                 value={formData.category}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                onChange={handleInputChange}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
               >
                 <option value="">Select a category</option>
-                {categories.map((category) => (
+                {CATEGORIES.map((category) => (
                   <option key={category} value={category}>
                     {category}
                   </option>
@@ -197,7 +187,7 @@ const SubmitQuestionPage = () => {
                 id="difficulty"
                 name="difficulty"
                 value={formData.difficulty}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               >
@@ -219,7 +209,7 @@ const SubmitQuestionPage = () => {
               id="question"
               name="question"
               value={formData.question}
-              onChange={handleChange}
+              onChange={handleInputChange}
               required
               rows={4}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -262,7 +252,7 @@ const SubmitQuestionPage = () => {
               id="explanation"
               name="explanation"
               value={formData.explanation}
-              onChange={handleChange}
+              onChange={handleInputChange}
               required
               rows={4}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"

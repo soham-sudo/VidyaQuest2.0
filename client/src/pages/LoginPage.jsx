@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, clearError } from '../store/features/auth/authSlice';
+import { login, clearError } from '../store/features/auth/authSlice';
 import { FiMail, FiLock } from 'react-icons/fi';
 import { useToast } from '../components/ui/Toast';
 
@@ -42,7 +42,7 @@ const LoginPage = () => {
     e.preventDefault();
 
     try {
-      await dispatch(loginUser(formData)).unwrap();
+      await dispatch(login(formData)).unwrap();
       successToast('Login successful!');
       navigate('/');
     } catch (err) {

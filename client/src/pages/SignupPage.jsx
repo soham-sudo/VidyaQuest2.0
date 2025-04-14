@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerUser, clearError } from '../store/features/auth/authSlice';
+import { register, clearError } from '../store/features/auth/authSlice';
 import { FiUser, FiMail, FiLock } from 'react-icons/fi';
 import { useToast } from '../components/ui/Toast';
 
@@ -61,7 +61,7 @@ const SignupPage = () => {
     }
 
     try {
-      await dispatch(registerUser({
+      await dispatch(register({
         username: formData.username,
         email: formData.email,
         password: formData.password,
